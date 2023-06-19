@@ -42,28 +42,37 @@ jobs:
       - name: docker build
         run: docker build -t psaksimg:'${{github.sha}}' .
 
-      - name: Azure Container Registry Login
-        uses: Azure/docker-login@v1
+      # - name: Azure Container Registry Login
+      #   uses: Azure/docker-login@v1
+      #   with:
+      #     username: ${{ secrets.ACR_LOGIN }}
+      #     password: ${{ secrets.ACR_PASSWORD }}
+      #     login-server: ${{secrets.ACR_LOGIN_SERVER}}
+
+      # # - name: docker login
+      # #   run: docker login --username '${{ secrets.DOCKER_LOGIN }}' --password '${{ secrets.DOCKER_PASSWORD }}'
+
+      # - name: tag docker image
+      #   run: docker tag psaksimg:${{github.sha}} ${{vars.VAR_ACR_LOGIN_SERVER}}/psaksimg:${{github.sha}}
+
+      # - name: Azure Container Registry Login Again
+      #   uses: Azure/docker-login@v1
+      #   with:
+      #     username: ${{ secrets.ACR_LOGIN }}
+      #     password: ${{ secrets.ACR_PASSWORD }}
+      #     login-server: ${{secrets.ACR_LOGIN_SERVER}}
+
+      # - name: Docker Push image
+      #   run: docker push ${{vars.VAR_ACR_LOGIN_SERVER}}/psaksimg:${{github.sha}}
+
+      - name: Build and push Docker images
+        uses: docker/build-push-action@v4.1.1
         with:
-          username: ${{ secrets.ACR_LOGIN }}
-          password: ${{ secrets.ACR_PASSWORD }}
-          login-server: ${{secrets.ACR_LOGIN_SERVER}}
-
-      # - name: docker login
-      #   run: docker login --username '${{ secrets.DOCKER_LOGIN }}' --password '${{ secrets.DOCKER_PASSWORD }}'
-
-      - name: tag docker image
-        run: docker tag psaksimg:${{github.sha}} ${{vars.VAR_ACR_LOGIN_SERVER}}/psaksimg:${{github.sha}}
-
-      - name: Azure Container Registry Login Again
-        uses: Azure/docker-login@v1
-        with:
-          username: ${{ secrets.ACR_LOGIN }}
-          password: ${{ secrets.ACR_PASSWORD }}
-          login-server: ${{secrets.ACR_LOGIN_SERVER}}
-
-      - name: Docker Push image
-        run: docker push ${{vars.VAR_ACR_LOGIN_SERVER}}/psaksimg:${{github.sha}}
+          # Build's context is the set of files located in the specified PATH or URL
+          context: .
+          tags: psaksimg:${{github.sha}},${{vars.VAR_ACR_LOGIN_SERVER}}/psaksimg:${{github.sha}}
+          push: true
+          github-token: ${{ github.token }} # optional, default is ${{ github.token }}
 
       - name: Azure Kubernetes set context
         uses: Azure/aks-set-context@v3
@@ -85,7 +94,7 @@ jobs:
         with:
           manifests: k8s/deployment.yml
             k8s/service.yml
-          images: "${{vars.VAR_ACR_LOGIN_SERVER}}/psaksimg:${{github.sha}}"
+          images: ${{vars.VAR_ACR_LOGIN_SERVER}}/psaksimg:${{github.sha}}
           imagepullsecrets: acr-image-pull-secret
           pull-images: true # default is true
           strategy: basic # default is basic
