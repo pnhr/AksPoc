@@ -6,9 +6,9 @@ name: CI
 # events but only for the main branch
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -31,3 +31,22 @@ jobs:
         run: |
           echo Add other actions to build,
           echo test, and deploy your project.
+      - name: Setup .NET Core SDK
+        uses: actions/setup-dotnet@v3.2.0
+        with:
+          # Optional SDK version(s) to use. If not provided, will install global.json version when available. Examples: 2.2.104, 3.1, 3.1.x, 3.x, 6.0.2xx
+          dotnet-version: 7.0.1xx
+      - name: dotnet build
+        run: dotnet build -c release
+
+      - name: docker build
+        run: docker build -t psaksimg:'${{github.sha}}'
+
+      - name: docker login
+        run: docker login --username '${{secrets.DOCKER_LOGIN}}' --password '${{secrets.DOCKER_PASSWORD}}'
+
+      - name: tag docker image
+        run: docker tag psaksimg:'${{github.sha}}' '${{secrets.DOCKER_LOGIN}}'/psaksimg:'${{github.sha}}'
+
+      - name: push docker image
+        run: docker push '${{secrets.DOCKER_LOGIN}}'/psaksimg:'${{github.sha}}'
