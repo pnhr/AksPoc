@@ -56,6 +56,11 @@ jobs:
         run: docker tag psaksimg:${{github.sha}} ${{vars.VAR_ACR_LOGIN_SERVER}}/psaksimg:${{github.sha}}
 
       - name: push docker image
+        uses: Azure/docker-login@v1
+        with:
+          username: ${{ secrets.ACR_LOGIN }}
+          password: ${{ secrets.ACR_PASSWORD }}
+          login-server: ${{secrets.ACR_LOGIN_SERVER}}
         run: docker push ${{vars.VAR_ACR_LOGIN_SERVER}}/psaksimg:${{github.sha}}
 
       - name: Azure Kubernetes set context
