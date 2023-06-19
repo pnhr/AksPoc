@@ -53,10 +53,10 @@ jobs:
       #   run: docker login --username '${{ secrets.DOCKER_LOGIN }}' --password '${{ secrets.DOCKER_PASSWORD }}'
 
       - name: tag docker image
-        run: docker tag psaksimg:'${{github.sha}}' '${{secrets.ACR_LOGIN}}'/psaksimg:'${{github.sha}}'
+        run: docker tag psaksimg:${{github.sha}} ${{secrets.ACR_LOGIN_SERVER}}/psaksimg:${{github.sha}}
 
       - name: push docker image
-        run: docker push '${{secrets.ACR_LOGIN}}'/psaksimg:'${{github.sha}}'
+        run: docker push ${{secrets.ACR_LOGIN_SERVER}}/psaksimg:${{github.sha}}
 
       - name: Azure Kubernetes set context
         uses: Azure/aks-set-context@v3
@@ -78,7 +78,7 @@ jobs:
         with:
           manifests: k8s/deployment.yml
             k8s/service.yml
-          images: "${{secrets.ACR_LOGIN}}/psaksimg:${{github.sha}}"
+          images: "${{secrets.ACR_LOGIN_SERVER}}/psaksimg:${{github.sha}}"
           imagepullsecrets: acr-image-pull-secret
           pull-images: true # default is true
           strategy: basic # default is basic
