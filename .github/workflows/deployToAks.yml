@@ -42,18 +42,51 @@ jobs:
       - name: docker build
         run: docker build -t psaksimg:'${{github.sha}}' .
 
-      # - name: docker login
-      #   uses: docker/login-action@v2.2.0
-      #   with:
-      #     registry: ${{ secrets.ACR_NAME }}
-      #     username: ${{ secrets.ACR_LOGIN }}
-      #     password: ${{ secrets.ACR_PASSWORD }}
+      - name: Azure Container Registry Login
+        uses: Azure/docker-login@v1
+        with:
+          username: ${{ secrets.ACR_LOGIN }}
+          password: ${{ secrets.ACR_PASSWORD }}
+          login-server: ${{secrets.ACR_LOGIN_SERVER}}
 
-      - name: docker login
-        run: docker login --username '${{ secrets.DOCKER_LOGIN }}' --password '${{ secrets.DOCKER_PASSWORD }}'
+      # - name: docker login
+      #   run: docker login --username '${{ secrets.DOCKER_LOGIN }}' --password '${{ secrets.DOCKER_PASSWORD }}'
 
       - name: tag docker image
-        run: docker tag psaksimg:'${{github.sha}}' '${{secrets.DOCKER_LOGIN}}'/psaksimg:'${{github.sha}}'
+        run: docker tag psaksimg:'${{github.sha}}' '${{secrets.ACR_LOGIN}}'/psaksimg:'${{github.sha}}'
 
       - name: push docker image
-        run: docker push '${{secrets.DOCKER_LOGIN}}'/psaksimg:'${{github.sha}}'
+        run: docker push '${{secrets.ACR_LOGIN}}'/psaksimg:'${{github.sha}}'
+
+      - name: Azure Kubernetes set context
+        uses: Azure/aks-set-context@v3
+        with:
+          resource-group: ps-kubernetes2
+          cluster-name: PsAzAksPoc
+
+      - name: Create secret in Kubernetes cluster
+        uses: Azure/k8s-create-secret@v4.0
+        with:
+          namespace: default
+          secret-name: acr-image-pull-secret
+          container-registry-url: "psazappcontainer.azurecr.io"
+          container-registry-username: ${{ secrets.ACR_LOGIN }}
+          container-registry-password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Deploy to Kubernetes cluster
+        uses: Azure/k8s-deploy@v4.9
+        with:
+          manifests: k8s/deployment.yml
+            k8s/service.yml
+          images: "${{secrets.ACR_LOGIN}}/psaksimg:${{github.sha}}"
+          imagepullsecrets: acr-image-pull-secret
+          pull-images: true # default is true
+          strategy: basic # default is basic
+          action: deploy # default is deploy
+          # Deploy when a previous deployment already exists. If true then --force argument is added to the apply command
+          force: false
+          token: ${{ github.token }} # default is ${{ github.token }}
+          # Name of resource group - Only required if using private cluster
+          resource-group: ps-kubernetes2
+          # Resource group name - Only required if using private cluster
+          name: ps-kubernetes2
