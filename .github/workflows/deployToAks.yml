@@ -55,12 +55,14 @@ jobs:
       - name: tag docker image
         run: docker tag psaksimg:${{github.sha}} ${{vars.VAR_ACR_LOGIN_SERVER}}/psaksimg:${{github.sha}}
 
-      - name: push docker image
+      - name: Azure Container Registry Login Again
         uses: Azure/docker-login@v1
         with:
           username: ${{ secrets.ACR_LOGIN }}
           password: ${{ secrets.ACR_PASSWORD }}
           login-server: ${{secrets.ACR_LOGIN_SERVER}}
+
+      - name: Docker Push image
         run: docker push ${{vars.VAR_ACR_LOGIN_SERVER}}/psaksimg:${{github.sha}}
 
       - name: Azure Kubernetes set context
