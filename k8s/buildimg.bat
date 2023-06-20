@@ -1,2 +1,2 @@
-docker build -t psazappcontainer.azurecr.io/psaksimg:latest .
-docker push psazappcontainer.azurecr.io/psaksimg:latest
+docker build -t psacrpoc.azurecr.io/psaksimg:latest .
+docker push psacrpoc.azurecr.io/psaksimg:latest

@@ -36,7 +36,7 @@ on:
 
 env:
   AZURE_CONTAINER_REGISTRY: psacrpoc
-  CONTAINER_NAME: ps-products-container
+  CONTAINER_NAME: psaksimg
   RESOURCE_GROUP: ps-aks
   CLUSTER_NAME: PsAks
   DEPLOYMENT_MANIFEST_PATH: k8s/deployment.yml
