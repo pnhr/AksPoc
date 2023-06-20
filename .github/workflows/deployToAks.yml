@@ -40,39 +40,16 @@ jobs:
         run: dotnet build -c release
 
       - name: docker build
-        run: docker build -t psaksimg:'${{github.sha}}' .
+        run: docker build -t psaksimg:${{github.sha}} .
 
-      # - name: Azure Container Registry Login
-      #   uses: Azure/docker-login@v1
-      #   with:
-      #     username: ${{ secrets.ACR_LOGIN }}
-      #     password: ${{ secrets.ACR_PASSWORD }}
-      #     login-server: ${{secrets.ACR_LOGIN_SERVER}}
+      - name: docker login
+        run: docker login --username '${{secrets.DOCKER_LOGIN}}' --password '${{secrets.DOCKER_PASSWORD}}'
 
-      # # - name: docker login
-      # #   run: docker login --username '${{ secrets.DOCKER_LOGIN }}' --password '${{ secrets.DOCKER_PASSWORD }}'
+      - name: tag docker image
+        run: docker tag psaksimg:${{github.sha}} ${{secrets.DOCKER_LOGIN}}/psaksimg:${{github.sha}}
 
-      # - name: tag docker image
-      #   run: docker tag psaksimg:${{github.sha}} ${{vars.VAR_ACR_LOGIN_SERVER}}/psaksimg:${{github.sha}}
-
-      # - name: Azure Container Registry Login Again
-      #   uses: Azure/docker-login@v1
-      #   with:
-      #     username: ${{ secrets.ACR_LOGIN }}
-      #     password: ${{ secrets.ACR_PASSWORD }}
-      #     login-server: ${{secrets.ACR_LOGIN_SERVER}}
-
-      # - name: Docker Push image
-      #   run: docker push ${{vars.VAR_ACR_LOGIN_SERVER}}/psaksimg:${{github.sha}}
-
-      - name: Build and push Docker images
-        uses: docker/build-push-action@v4.1.1
-        with:
-          # Build's context is the set of files located in the specified PATH or URL
-          context: .
-          tags: psaksimg:${{github.sha}},${{vars.VAR_ACR_LOGIN_SERVER}}/psaksimg:${{github.sha}}
-          push: true
-          github-token: ${{ github.token }} # optional, default is ${{ github.token }}
+      - name: Docker Push image
+        run: docker push ${{secrets.DOCKER_LOGIN}}/psaksimg:${{github.sha}}
 
       - name: Azure Kubernetes set context
         uses: Azure/aks-set-context@v3
@@ -83,26 +60,17 @@ jobs:
       - name: Create secret in Kubernetes cluster
         uses: Azure/k8s-create-secret@v4.0
         with:
-          namespace: default
-          secret-name: acr-image-pull-secret
-          container-registry-url: "psazappcontainer.azurecr.io"
-          container-registry-username: ${{ secrets.ACR_LOGIN }}
-          container-registry-password: ${{ secrets.ACR_PASSWORD }}
+          secret-type: docker-registry
+          secret-name: docker-image-pull-secret
+          container-registry-url: https://index.docker.io/v1/
+          container-registry-username: ${{ secrets.DOCKER_LOGIN }}
+          container-registry-password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Deploy to Kubernetes cluster
         uses: Azure/k8s-deploy@v4.9
         with:
           manifests: k8s/deployment.yml
             k8s/service.yml
-          images: ${{vars.VAR_ACR_LOGIN_SERVER}}/psaksimg:${{github.sha}}
-          imagepullsecrets: acr-image-pull-secret
-          pull-images: true # default is true
-          strategy: basic # default is basic
-          action: deploy # default is deploy
-          # Deploy when a previous deployment already exists. If true then --force argument is added to the apply command
-          force: false
-          token: ${{ github.token }} # default is ${{ github.token }}
-          # Name of resource group - Only required if using private cluster
-          resource-group: ps-kubernetes2
-          # Resource group name - Only required if using private cluster
-          name: ps-kubernetes2
+          images: "${{secrets.DOCKER_LOGIN}}/psaksimg:${{github.sha}}"
+          imagepullsecrets: docker-image-pull-secret
+          action: deploy
