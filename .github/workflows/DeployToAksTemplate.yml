@@ -40,7 +40,6 @@ env:
   RESOURCE_GROUP: ps-aks
   CLUSTER_NAME: PsAks
   DEPLOYMENT_MANIFEST_PATH: k8s/deployment.yml
-    k8s/service.yml
 
 jobs:
   buildImage:
@@ -104,7 +103,8 @@ jobs:
         uses: Azure/k8s-deploy@v4
         with:
           action: deploy
-          manifests: k8s/deployment.yml
+          manifests: |
+            k8s/deployment.yml
             k8s/service.yml
           images: |
             ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_NAME }}:${{ github.sha }}
