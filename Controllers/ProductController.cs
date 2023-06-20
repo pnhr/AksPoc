@@ -27,7 +27,7 @@ public class ProductController : ControllerBase
         {
             Id = Random.Shared.Next(1, 55),
             Name = Summaries[Random.Shared.Next(Summaries.Length)],
-            Count = 76 //Random.Shared.Next(10, 55)
+            Count = 869 //Random.Shared.Next(10, 55)
         })
         .ToArray();
     }
