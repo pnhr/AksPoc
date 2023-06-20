@@ -56,6 +56,8 @@ jobs:
         with:
           resource-group: ps-kubernetes2
           cluster-name: PsAzAksPoc
+          subscription: 5aba52e8-1852-463a-b0fc-b236ce7c4eec
+          use-kubelogin: true
 
       - name: Create secret in Kubernetes cluster
         uses: Azure/k8s-create-secret@v4.0
