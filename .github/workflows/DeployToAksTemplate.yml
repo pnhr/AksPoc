@@ -35,11 +35,11 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_CONTAINER_REGISTRY: ${{ secrets.AZURE_CONTAINER_REGISTRY }}
-  CONTAINER_NAME: "ps-products-container"
-  RESOURCE_GROUP: ${{ secrets.AKS_ACR_RESOURCE_GROUP }}
-  CLUSTER_NAME: ${{ secrets.AKS_CLUSTER_NAME }}
-  DEPLOYMENT_MANIFEST_PATH: ${{ secrets.DEPLOY_MANIFEST_YAML_PATH }}
+  AZURE_CONTAINER_REGISTRY: psacrpoc
+  CONTAINER_NAME: ps-products-container
+  RESOURCE_GROUP: ps-aks
+  CLUSTER_NAME: PsAks
+  DEPLOYMENT_MANIFEST_PATH: k8s/deployment.yml
 
 jobs:
   buildImage:
