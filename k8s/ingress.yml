@@ -7,11 +7,10 @@ metadata:
 spec:
   ingressClassName: azure-application-gateway
   rules:
-    - host: psaksapp
-      http:
+    - http:
         paths:
           - pathType: Prefix
-            path: "/"
+            path: "/(.*)"
             backend:
               service:
                 name: ps-products-service

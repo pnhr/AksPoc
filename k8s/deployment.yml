@@ -28,6 +28,7 @@ kind: Service
 metadata:
   name: ps-products-service
 spec:
+  type: ClusterIP
   selector:
     app: ps-products-pod
   ports:
