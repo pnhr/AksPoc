@@ -36,3 +36,42 @@ spec:
       protocol: TCP
       port: 9080
       targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ps-nginx-deployment
+spec:
+  selector:
+    matchLabels:
+      app: ps-nginx-pod
+  template:
+    metadata:
+      labels:
+        app: ps-nginx-pod
+    spec:
+      containers:
+        - name: ps-nginx-container
+          image: nginx
+          imagePullPolicy: "Always"
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          ports:
+            - name: web
+              containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ps-nginx-service
+spec:
+  type: ClusterIP
+  selector:
+    app: ps-nginx-pod
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8080
+      targetPort: 80

@@ -7,8 +7,22 @@ spec:
   rules:
     - http:
         paths:
-          - pathType: Prefix
-            path: "/"
+          - path: /api(/|$)(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: ps-products-service
+                port:
+                  number: 80
+          - path: /nginx(/|$)(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: ps-nginx-service
+                port:
+                  number: 80
+          - path: /(/|$)(.*)
+            pathType: Prefix
             backend:
               service:
                 name: ps-products-service
