@@ -2,15 +2,13 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: ps-ks8-ingress
-  labels:
-    name: ps-ks8-ingress
 spec:
   ingressClassName: azure-application-gateway
   rules:
     - http:
         paths:
           - pathType: Prefix
-            path: "/(.*)"
+            path: "/"
             backend:
               service:
                 name: ps-products-service
